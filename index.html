@@ -51,14 +51,19 @@
 
         // Create Renderer
         const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-        // Cube
+        // Object
         const geometry = new THREE.ConeGeometry();
-        const material = new THREE.MeshBasicMaterial( { color: 0x03bafc } );
+        const material = new THREE.MeshLambertMaterial( { color: 0x03bafc } );
         const cube = new THREE.Mesh( geometry, material );
-        scene.add( cube );
+        scene.add(cube);
+
+        // Light
+        const light = new THREE.PointLight( 0xa0a0a0 );
+        light.position.set(5, 2, 5);
+        scene.add(light);
 
         camera.position.z = 5;
 
