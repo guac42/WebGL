@@ -6,7 +6,7 @@
 const PointerLockControls = function (camera, cannonBody) {
     var eyeYPos = 2; // eyes are 2 meters above the ground
     var velocityFactor = 0.2;
-    var jumpVelocity = 20;
+    var jumpVelocity = 8;
     var scope = this;
 
     var yaw = 90, pitch = 0;
@@ -126,14 +126,15 @@ const PointerLockControls = function (camera, cannonBody) {
     this.reset = function () {
         cannonBody.position.set(5, 1, 0);
         cannonBody.velocity.setZero();
+        cannonBody.angularVelocity.setZero();
         camera.quaternion.identity();
         yaw = 90;
         pitch = 0;
     }
 
     // Moves the camera to the Cannon.js object position and adds velocity to the object if the run key is down
-    var inputVelocity = new THREE.Vector3();
-    var euler = new THREE.Euler();
+    const inputVelocity = new THREE.Vector3();
+    const euler = new THREE.Euler();
     this.update = function (delta) {
 
         //if (scope.enabled === false) return;
@@ -142,30 +143,37 @@ const PointerLockControls = function (camera, cannonBody) {
 
         inputVelocity.set(0, 0, 0);
 
-        if (moveForward) {
-            inputVelocity.z = -velocityFactor * delta;
-        }
-        if (moveBackward) {
-            inputVelocity.z = velocityFactor * delta;
-        }
-
-        if (moveLeft) {
-            inputVelocity.x = -velocityFactor * delta;
-        }
-        if (moveRight) {
-            inputVelocity.x = velocityFactor * delta;
-        }
-
-        // Convert velocity to world coordinates
-        euler.x = THREE.MathUtils.degToRad(pitch);
-        euler.y = THREE.MathUtils.degToRad(yaw);
+        // Only apply yaw before velocity
         euler.order = "YXZ";
-        quat.setFromEuler(euler);
-        inputVelocity.applyQuaternion(quat);
+        euler.y = THREE.MathUtils.degToRad(yaw);
 
-        // Add to the object
-        velocity.x += inputVelocity.x;
-        velocity.z += inputVelocity.z;
+        // Only apply velocity to object if on ground
+        if (canJump) {
+            if (moveForward) {
+                inputVelocity.z = -velocityFactor * delta;
+            }
+            if (moveBackward) {
+                inputVelocity.z = velocityFactor * delta;
+            }
+
+            if (moveLeft) {
+                inputVelocity.x = -velocityFactor * delta;
+            }
+            if (moveRight) {
+                inputVelocity.x = velocityFactor * delta;
+            }
+
+            // Apply direction to velocity
+            inputVelocity.applyEuler(euler);
+
+            // Add velocity to object
+            velocity.x += inputVelocity.x;
+            velocity.z += inputVelocity.z;
+        }
+
+        // Now, apply pitch to update view
+        euler.x = THREE.MathUtils.degToRad(pitch);
+        quat.setFromEuler(euler);
 
         camera.position.copy(cannonBody.position);
         camera.quaternion.copy(quat);
