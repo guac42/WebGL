@@ -134,6 +134,7 @@
     }
 
     function bodyFromObject(object) {
+        console.log(object);
         const geom = object.geometry;
         const body = new CANNON.Body({ mass: 0});
         switch (geom.type) {
